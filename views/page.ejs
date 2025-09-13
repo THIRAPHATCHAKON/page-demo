@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SQL 101 — สรุปเข้าใจง่าย</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg: #0b0f14;
+      --panel: #0f1621;
+      --panel-2: #121a26;
+      --text: #e6eef7;
+      --muted: #a7b1c2;
+      --primary: #7c5cff;
+      --accent: #00d4ff;
+      --ring: rgba(124,92,255,.45);
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --radius-xl: 20px;
+      --radius-lg: 14px;
+      --radius-md: 10px;
+      --grid: minmax(260px,1fr);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, Noto Sans, "Apple Color Emoji", "Segoe UI Emoji";
+      color:var(--text);
+      background: radial-gradient(1200px 800px at 75% -10%, rgba(124,92,255,.25), transparent),
+                  radial-gradient(900px 600px at -10% 20%, rgba(0,212,255,.18), transparent),
+                  var(--bg);
+      line-height:1.65;
+      letter-spacing:.2px;
+    }
+    a{color:var(--accent); text-decoration:none}
+    .container{width:min(1100px,92vw); margin-inline:auto;}
+
+    /* Top Nav */
+    .nav{
+      position:sticky; top:0; z-index:50;
+      backdrop-filter:saturate(140%) blur(8px);
+      background: linear-gradient(180deg, rgba(15,22,33,.85), rgba(15,22,33,.55));
+      border-bottom:1px solid rgba(124,92,255,.15);
+    }
+    .nav-inner{display:flex; align-items:center; justify-content:space-between; padding:14px 0;}
+    .brand{display:flex; align-items:center; gap:10px; font-weight:800; letter-spacing:.4px}
+    .brand .logo{
+      width:34px; height:34px; border-radius:12px; display:grid; place-items:center;
+      background: conic-gradient(from 120deg, var(--primary), var(--accent));
+      box-shadow: 0 6px 18px rgba(124,92,255,.35);
+    }
+    .brand span{font-weight:800}
+    .nav-links{display:flex; gap:18px; font-weight:600}
+    .tag{
+      font-size:12px; color:var(--muted); border:1px solid rgba(167,177,194,.2); padding:6px 10px; border-radius:999px;
+      background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,0));
+    }
+
+    /* Hero */
+    .hero{padding:70px 0 40px}
+    .hero-grid{display:grid; grid-template-columns: 1.2fr .8fr; gap:28px}
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+      border:1px solid rgba(124,92,255,.18);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow);
+    }
+    .card.padded{padding:28px}
+    .hero h1{font-size: clamp(28px, 5vw, 56px); line-height:1.05; margin:0 0 16px; font-weight:900}
+    .lead{font-size: clamp(15px, 2.4vw, 18px); color:var(--muted); margin:0 0 22px}
+    .cta-row{display:flex; gap:12px; flex-wrap:wrap}
+    .btn{
+      display:inline-flex; align-items:center; gap:10px; padding:12px 16px; font-weight:700; border-radius:12px;
+      border:1px solid rgba(124,92,255,.28); color:var(--text); cursor:pointer; background:transparent;
+      transition: transform .15s ease, box-shadow .2s ease, background .2s ease;
+    }
+    .btn.primary{background:linear-gradient(180deg, var(--primary), #5a3cff); box-shadow: 0 10px 24px rgba(124,92,255,.35); border-color:transparent}
+    .btn:hover{transform:translateY(-1px)}
+
+    .hero .code{
+      height:100%;
+      display:grid; grid-template-rows:auto 1fr; overflow:hidden; border-radius: var(--radius-xl);
+    }
+    .code-top{
+      display:flex; justify-content:space-between; align-items:center; padding:14px 18px; border-bottom:1px solid rgba(124,92,255,.2);
+      background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
+    }
+    .dots{display:flex; gap:8px}
+    .dot{width:10px; height:10px; border-radius:50%; background:rgba(255,255,255,.15);}
+    .code-area{padding:18px; overflow:auto; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; font-size:14px;}
+    pre{margin:0; white-space:pre;}
+    code{color:#e7f0ff}
+    .token-kw{color:#9ee7ff}
+    .token-str{color:#ffd880}
+    .token-id{color:#b6ffa1}
+    .token-fn{color:#c4b5fd}
+    .kbd{font-family:inherit; font-size:12px; padding:2px 8px; border:1px solid rgba(231,240,255,.2); border-radius:8px; background:rgba(231,240,255,.06)}
+
+    /* Sections */
+    section{padding:36px 0}
+    h2{font-size: clamp(22px, 3.5vw, 32px); margin:0 0 14px}
+    p{margin:0 0 10px}
+    .grid{display:grid; grid-template-columns: repeat(12, 1fr); gap:18px}
+    .col-12{grid-column: span 12}
+    .col-6{grid-column: span 6}
+    .col-4{grid-column: span 4}
+    .col-3{grid-column: span 3}
+
+    .pill{display:inline-block; font-weight:700; font-size:12px; letter-spacing:.4px; text-transform:uppercase; color:var(--accent);
+      background:rgba(0,212,255,.08); padding:8px 10px; border:1px solid rgba(0,212,255,.25); border-radius:10px;}
+
+    .feature{
+      padding:18px; border-radius:var(--radius-lg);
+      background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01));
+      border:1px solid rgba(124,92,255,.18);
+      transition: transform .15s ease, box-shadow .2s ease, border-color .2s ease;
+    }
+    .feature:hover{transform: translateY(-3px); box-shadow: 0 16px 36px rgba(0,0,0,.35); border-color: rgba(124,92,255,.35)}
+    .feature h3{margin:4px 0 8px}
+    .feature p{color:var(--muted)}
+
+    .kbd-row{display:flex; gap:10px; flex-wrap:wrap}
+
+    .table{
+      width:100%; border-collapse: collapse; overflow:hidden; border-radius: var(--radius-lg); border:1px solid rgba(124,92,255,.2);
+      background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01));
+    }
+    .table th, .table td{padding:14px 12px; text-align:left; border-bottom:1px solid rgba(124,92,255,.15)}
+    .table th{color:#b7c3d8; font-weight:700}
+    .badge{display:inline-flex; align-items:center; gap:8px; padding:6px 10px; border:1px solid rgba(124,92,255,.25); border-radius:999px; font-size:12px}
+
+    .footer{padding:28px 0 50px; color:var(--muted); text-align:center}
+
+    @media (max-width: 900px){
+      .hero-grid{grid-template-columns: 1fr}
+      .col-6{grid-column: span 12}
+      .col-4{grid-column: span 12}
+      .col-3{grid-column: span 6}
+    }
+  </style>
+</head>
+<body>
+  <header class="nav">
+    <div class="container nav-inner">
+      <div class="brand">
+        <div class="logo" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M4 12c0-4.418 3.582-8 8-8" stroke="white" stroke-width="2" stroke-linecap="round"/>
+            <path d="M20 12c0 4.418-3.582 8-8 8" stroke="white" stroke-width="2" stroke-linecap="round"/>
+            <circle cx="12" cy="12" r="2.6" fill="white"/>
+          </svg>
+        </div>
+        <span>SQL 101</span>
+      </div>
+      <nav class="nav-links">
+        <a href="#crud">CRUD</a>
+        <a href="#join">JOIN</a>
+        <a href="#filtering">Filtering</a>
+        <a href="#normal">Normalization</a>
+        <a class="tag" href="#cheatsheet">Cheat Sheet</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- HERO -->
+    <section class="hero">
+      <div class="hero-grid">
+        <div class="card padded">
+          <span class="pill">Structured Query Language</span>
+          <h1>ทำความรู้จัก <span style="background:linear-gradient(90deg,var(--accent),var(--primary)); -webkit-background-clip:text; background-clip:text; color:transparent">SQL</span> ให้สนุกขึ้น</h1>
+          <p class="lead">ภาษาเชิงโครงสร้างสำหรับจัดการฐานข้อมูลเชิงสัมพันธ์ (Relational Database) — ใช้สร้าง อ่าน แก้ไข และลบข้อมูล พร้อมคิวรีข้อมูลเชิงวิเคราะห์ได้อย่างทรงพลัง</p>
+          <div class="cta-row">
+            <a class="btn primary" href="#crud">เริ่มจาก CRUD</a>
+            <a class="btn" href="#join">ดูตัวอย่าง JOIN</a>
+            <span class="kbd">Tip: กด <strong>Ctrl</strong> + <strong>F</strong> เพื่อค้นหา</span>
+          </div>
+        </div>
+        <div class="card code">
+          <div class="code-top">
+            <span style="display:flex; align-items:center; gap:10px">
+              <span class="dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span>
+              <strong>Example.sql</strong>
+            </span>
+            <span class="badge">RDBMS: PostgreSQL / MySQL</span>
+          </div>
+          <div class="code-area">
+<pre><code><span class="token-kw">CREATE</span> <span class="token-kw">TABLE</span> products (
+  id <span class="token-kw">INT</span> <span class="token-kw">PRIMARY KEY</span> <span class="token-kw">AUTO_INCREMENT</span>,
+  name <span class="token-kw">VARCHAR</span>(100) <span class="token-kw">NOT NULL</span>,
+  price <span class="token-kw">DECIMAL</span>(10,2) <span class="token-kw">CHECK</span> (price &gt;= 0),
+  category_id <span class="token-kw">INT</span>,
+  <span class="token-kw">FOREIGN KEY</span> (category_id) <span class="token-kw">REFERENCES</span> categories(id)
+);
+
+<span class="token-kw">SELECT</span> p.name, p.price, c.name <span class="token-id">AS</span> category
+<span class="token-kw">FROM</span> products p
+<span class="token-kw">JOIN</span> categories c <span class="token-kw">ON</span> p.category_id = c.id
+<span class="token-kw">WHERE</span> p.price &gt;= <span class="token-str">100.00</span>
+<span class="token-kw">ORDER BY</span> p.price <span class="token-id">DESC</span>
+<span class="token-kw">LIMIT</span> 5;
+</code></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CRUD -->
+    <section id="crud">
+      <h2>พื้นฐานสำคัญ: CRUD</h2>
+      <p class="lead">สี่คำสั่งหลักในการทำงานกับข้อมูล — <strong>Create</strong>, <strong>Read</strong>, <strong>Update</strong>, <strong>Delete</strong></p>
+      <div class="grid">
+        <div class="col-3 feature"><h3>CREATE</h3><p>เพิ่มข้อมูลใหม่ด้วย <code>INSERT</code> หรือโครงสร้างด้วย <code>CREATE</code>.</p><pre><code>INSERT INTO users(name,email)
+VALUES('A','a@mail.com');</code></pre></div>
+        <div class="col-3 feature"><h3>READ</h3><p>อ่านข้อมูลด้วย <code>SELECT</code> สามารถใช้ <code>WHERE</code> กรอง และ <code>ORDER BY</code> จัดเรียง.</p><pre><code>SELECT id,name
+FROM users
+WHERE active = 1
+ORDER BY created_at DESC;</code></pre></div>
+        <div class="col-3 feature"><h3>UPDATE</h3><p>แก้ไขข้อมูลเดิม ควรกำหนด <code>WHERE</code> เสมอเพื่อเลี่ยงอัปเดตทั้งตาราง.</p><pre><code>UPDATE users
+SET name = 'Bee'
+WHERE id = 7;</code></pre></div>
+        <div class="col-3 feature"><h3>DELETE</h3><p>ลบแถวข้อมูล ระวัง! เพิ่มเงื่อนไขให้ชัดเจน.</p><pre><code>DELETE FROM users
+WHERE last_login &lt; NOW() - INTERVAL 1 YEAR;</code></pre></div>
+      </div>
+    </section>
+
+    <!-- Filtering & Aggregation -->
+    <section id="filtering">
+      <h2>Filtering & Aggregation</h2>
+      <div class="grid">
+        <div class="col-6 feature">
+          <h3>กรองข้อมูล</h3>
+          <p>ใช้ <code>WHERE</code> ร่วมกับตัวดำเนินการเช่น <code>=</code>, <code>&gt;</code>, <code>&lt;</code>, <code>BETWEEN</code>, <code>IN</code>, <code>LIKE</code>.</p>
+<pre><code>SELECT *
+FROM orders
+WHERE status IN ('paid','shipped')
+  AND created_at BETWEEN '2025-01-01' AND '2025-12-31';</code></pre>
+          <div class="kbd-row">
+            <span class="kbd">LIKE 'A%'</span>
+            <span class="kbd">BETWEEN 10 AND 20</span>
+            <span class="kbd">IN (...)</span>
+          </div>
+        </div>
+        <div class="col-6 feature">
+          <h3>สรุปผล (Aggregate)</h3>
+          <p>ฟังก์ชันยอดนิยม: <code>COUNT</code>, <code>SUM</code>, <code>AVG</code>, <code>MIN</code>, <code>MAX</code> ร่วมกับ <code>GROUP BY</code> และ <code>HAVING</code>.</p>
+<pre><code>SELECT category_id, COUNT(*) AS cnt, AVG(price) avg_price
+FROM products
+GROUP BY category_id
+HAVING COUNT(*) &gt;= 5;</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- JOIN -->
+    <section id="join">
+      <h2>JOIN แบบเข้าใจไว</h2>
+      <p class="lead">เชื่อมตารางด้วยคีย์ที่เกี่ยวข้อง — เลือกชนิด JOIN ให้เหมาะกับผลลัพธ์ที่ต้องการ</p>
+      <table class="table">
+        <thead>
+          <tr><th>ชนิด</th><th>อธิบาย</th><th>ตัวอย่าง</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>INNER JOIN</strong></td>
+            <td>คืนแถวที่มีแมตช์ในทั้งสองตาราง</td>
+            <td><code>SELECT ... FROM a INNER JOIN b ON a.id=b.a_id;</code></td>
+          </tr>
+          <tr>
+            <td><strong>LEFT JOIN</strong></td>
+            <td>คืนทุกแถวจากซ้าย + แมตช์จากขวา (ไม่มีเป็น <em>NULL</em>)</td>
+            <td><code>SELECT ... FROM a LEFT JOIN b ON ...;</code></td>
+          </tr>
+          <tr>
+            <td><strong>RIGHT JOIN</strong></td>
+            <td>คืนทุกแถวจากขวา + แมตช์จากซ้าย</td>
+            <td><code>SELECT ... FROM a RIGHT JOIN b ON ...;</code></td>
+          </tr>
+          <tr>
+            <td><strong>FULL OUTER</strong></td>
+            <td>รวมทุกแถวจากทั้งสองฝั่ง (ที่รองรับ)</td>
+            <td><code>SELECT ... FROM a FULL OUTER JOIN b ON ...;</code></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Normalization -->
+    <section id="normal">
+      <h2>Normalization — ออกแบบตารางให้ดีตั้งแต่แรก</h2>
+      <div class="grid">
+        <div class="col-4 feature">
+          <h3>1NF</h3>
+          <p>ข้อมูลเป็นอะตอม (ไม่มีซ้ำซ้อนในคอลัมน์เดียว เช่น ลิสต์ค่านับรวมในช่องเดียว)</p>
+        </div>
+        <div class="col-4 feature">
+          <h3>2NF</h3>
+          <p>ทุกคอลัมน์ที่ไม่ใช่คีย์ พึ่งพา <em>คีย์ทั้งหมด</em> ของ Primary Key แบบคอมโพสิต</p>
+        </div>
+        <div class="col-4 feature">
+          <h3>3NF</h3>
+          <p>ไม่มีการพึ่งพาแบบถ่ายทอด (A→B และ B→C หลีกเลี่ยงให้ A ไม่กำหนด C ทางอ้อม)</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Cheat Sheet -->
+    <section id="cheatsheet">
+      <h2>Cheat Sheet — คำสั่งที่ใช้บ่อย</h2>
+      <div class="grid">
+        <div class="col-6 feature">
+<pre><code>-- สร้างตาราง
+CREATE TABLE users (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  name VARCHAR(80) NOT NULL,
+  email VARCHAR(120) UNIQUE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- ดัชนี
+CREATE INDEX idx_users_email ON users(email);
+
+-- คีย์นอก
+ALTER TABLE orders
+ADD CONSTRAINT fk_user
+FOREIGN KEY (user_id) REFERENCES users(id);
+</code></pre>
+        </div>
+        <div class="col-6 feature">
+<pre><code>-- คำสั่งอ่านแบบพบนบ่อย
+SELECT u.name, COUNT(o.id) AS total_orders
+FROM users u
+LEFT JOIN orders o ON o.user_id = u.id
+WHERE u.created_at &gt;= CURRENT_DATE - INTERVAL 90 DAY
+GROUP BY u.id
+ORDER BY total_orders DESC
+LIMIT 10;</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <section class="footer">
+      <p>ทำด้วยใจให้คนรักฐานข้อมูล — SQL 101</p>
+    </section>
+  </main>
+</body>
+</html>
